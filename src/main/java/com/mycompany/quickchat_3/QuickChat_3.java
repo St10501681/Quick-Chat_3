@@ -9,71 +9,7 @@ import java.util.Scanner;
  *
  * @author User
  */
-class Message {
 
-    static ArrayList<String> sentMessages = new ArrayList<>();
-    static int totalMessages = 0;
-
-    // 1. Check Message ID
-    public static boolean checkMessageID(String messageID) {
-        return messageID.length() <= 10;
-    }
-
-    // 2. Check Recipient Cell
-    public static String checkRecipientCell(String cell) {
-        if (cell.length() <= 10 && (cell.startsWith("0") || cell.startsWith("+27"))) {
-            return "Cell number successfully captured";
-        } else {
-            return "Cell number is incorrectly formatted";
-        }
-    }
-
-    // 3. Message Hash
-    public static String checkMessageHash(String messageID, String message) {
-        if (message.length() < 2) {
-            return messageID + ":INVALID";
-        }
-
-        String firstTwo = message.substring(0, 2).toUpperCase();
-        String lastTwo = message.substring(message.length() - 2).toUpperCase();
-
-        return messageID + ":" + firstTwo + lastTwo;
-    }
-
-    // 4. Send Message
-    public static String sendMessage(int choice, String message) {
-        switch (choice) {
-            case 1:
-                sentMessages.add(message);
-                totalMessages++;
-                return "Message successfully sent.";
-            case 2:
-                return "Message stored.";
-            case 3:
-                return "Message disregarded.";
-            default:
-                return "Invalid option selected.";
-        }
-    }
-
-    // 5. Print Messages
-    public static String printMessages() {
-        if (sentMessages.isEmpty()) {
-            return "No messages have been sent.";
-        }
-
-        String result = "";
-        for (int i = 0; i < sentMessages.size(); i++) {
-            result += (i + 1) + ". " + sentMessages.get(i) + "\n";
-        }
-        return result;
-    }
-
-    // 6. Return Total Messages
-    public static int returnTotalMessages() {
-        return totalMessages;
-    }
-}
 class Login {
 
     String storedUsername;
