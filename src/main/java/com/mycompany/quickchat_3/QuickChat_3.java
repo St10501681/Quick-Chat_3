@@ -144,13 +144,13 @@ public class QuickChat_3 {
 
         // ===== REGISTER =====
         System.out.println("=== SIGN UP ===");
-        System.out.print("Username: ");
+        System.out.print("Username that contains a underscor: ");
         String username = sc.nextLine();
 
-        System.out.print("Password: ");
+        System.out.print("Password with 8 characters a digit and a special character: ");
         String password = sc.nextLine();
 
-        System.out.print("Cellphone: ");
+        System.out.print("Cellphone with correct international code: ");
         String cell = sc.nextLine();
 
         System.out.println(user.register(username, password, cell));
