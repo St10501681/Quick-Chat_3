@@ -215,7 +215,7 @@ public class QuickChat_3 {
             sc.close();
             return;
         }
-
+Message.messageMenu(sc);
         // ===== MESSAGE SECTION =====
         System.out.println("\n=== MESSAGE SYSTEM ===");
 
@@ -238,6 +238,7 @@ public class QuickChat_3 {
         String hash = Message.checkMessageHash(messageID, message);
         System.out.println("Message Hash: " + hash);
 
+
         System.out.println("\nChoose an option:");
         System.out.println("1. Send Message");
         System.out.println("2. Store Message");
@@ -251,7 +252,7 @@ public class QuickChat_3 {
         System.out.println(Message.printMessages());
 
         System.out.println("Total messages sent: " + Message.returnTotalMessages());
-
+ 
         sc.close();
     }
 }
