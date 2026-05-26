@@ -14,12 +14,10 @@ class Message {
     static ArrayList<String> sentMessages = new ArrayList<>();
     static int totalMessages = 0;
 
-    // 1. Check Message ID
     public static boolean checkMessageID(String messageID) {
         return messageID.length() <= 10;
     }
 
-    // 2. Check Recipient Cell
     public static String checkRecipientCell(String cell) {
         if (cell.length() <= 10 && (cell.startsWith("0") || cell.startsWith("+27"))) {
             return "Cell number successfully captured";
@@ -28,7 +26,6 @@ class Message {
         }
     }
 
-    // 3. Message Hash
     public static String checkMessageHash(String messageID, String message) {
         if (message.length() < 2) {
             return messageID + ":INVALID";
@@ -40,26 +37,15 @@ class Message {
         return messageID + ":" + firstTwo + lastTwo;
     }
 
-    // 4. Send Message
     public static String sendMessage(int choice, String message) {
-        switch (choice) {
-            case 1:
-                sentMessages.add(message);
-                totalMessages++;
-                return "Message successfully sent.";
-            case 2:
-                return "Message stored.";
-            case 3:
-                return "Message disregarded.";
-            default:
-                return "Invalid option selected.";
-        }
+        sentMessages.add(message);
+        totalMessages++;
+        return "Message successfully sent.";
     }
 
-    // 5. Print Messages
     public static String printMessages() {
         if (sentMessages.isEmpty()) {
-            return "No messages have been sent.";
+            return "No messages sent.";
         }
 
         String result = "";
@@ -69,9 +55,67 @@ class Message {
         return result;
     }
 
-    // 6. Return Total Messages
     public static int returnTotalMessages() {
         return totalMessages;
+    }
+
+    // 🔥 MENU SYSTEM (a, b, c)
+    public static void messageMenu(Scanner sc) {
+
+        System.out.println("\nWelcome to QuickChat");
+
+        System.out.print("How many messages would you like to send? ");
+        int maxMessages = sc.nextInt();
+        sc.nextLine();
+
+        int sentCount = 0;
+        char choice;
+
+        do {
+            System.out.println("\nChoose an option:");
+            System.out.println("a) Send Messages");
+            System.out.println("b) Show recently sent messages");
+            System.out.println("c) Quit");
+
+            choice = sc.nextLine().toLowerCase().charAt(0);
+
+            switch (choice) {
+
+                case 'a' -> {
+                    if (sentCount >= maxMessages) {
+                        System.out.println("You have reached your message limit.");
+                        break;
+                    }
+
+                    System.out.print("Enter Message ID: ");
+                    String id = sc.nextLine();
+
+                    if (!checkMessageID(id)) {
+                        System.out.println("Invalid Message ID.");
+                        break;
+                    }
+
+                    System.out.print("Enter recipient cell: ");
+                    String cell = sc.nextLine();
+                    System.out.println(checkRecipientCell(cell));
+
+                    System.out.print("Enter message: ");
+                    String msg = sc.nextLine();
+
+                    System.out.println("Message Hash: " + checkMessageHash(id, msg));
+
+                    System.out.println(sendMessage(choice, msg));
+                    sentCount++;
+                }
+
+                case 'b' -> System.out.println("Coming Soon.");
+
+                case 'c' -> System.out.println("Goodbye!");
+
+                default -> System.out.println("Invalid option.");
+            }
+
+        } while (choice != 'c');
     }
 }
 class Login {
