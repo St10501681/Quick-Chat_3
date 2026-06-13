@@ -1,6 +1,7 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  */
+
 package com.mycompany.quickchat_3;
 
 import java.util.ArrayList;
@@ -73,41 +74,50 @@ class Login {
 }
 class Message {
     static ArrayList<MessageDetails> sentMessages = new ArrayList<>();
+    static ArrayList<MessageDetails> disregardedMessages = new ArrayList<>();
+    static ArrayList<MessageDetails> storedMessages = new ArrayList<>();
+    static ArrayList<String> messageHashes = new ArrayList<>();
+    static ArrayList<String> messageIDs = new ArrayList<>();
     static int totalMessages = 0;
 
     static class MessageDetails {
         String messageID;
         String messageHash;
+        String sender;
         String recipient;
         String message;
 
-        MessageDetails(String messageID, String messageHash, String recipient, String message) {
+        MessageDetails(String messageID, String messageHash, String sender, String recipient, String message) {
             this.messageID = messageID;
             this.messageHash = messageHash;
+            this.sender = sender;
             this.recipient = recipient;
             this.message = message;
         }
-
-        String displayDetails() {
+         String displayDetails() {
             return "Message ID: " + messageID + "\n"
                 + "Message Hash: " + messageHash + "\n"
                 + "Recipient: " + recipient + "\n"
                 + "Message: " + message + "\n";
+        }
+
+        String displayFullReport() {
+            return "Sender: " + sender + "\n" + displayDetails();
         }
     }
 
     public static boolean checkMessageID(String messageID) {
         return messageID != null && !messageID.isBlank() && messageID.length() <= 10;
     }
-public static String checkRecipientCell(String cell) {
+
+    public static String checkRecipientCell(String cell) {
         if (cell != null && (cell.matches("0\\d{9}") || cell.matches("\\+27\\d{9}"))) {
             return "Cell number successfully captured";
         }
 
         return "Cell number is incorrectly formatted";
     }
-
-    public static String checkMessageHash(String messageID, String message) {
+     public static String checkMessageHash(String messageID, String message) {
         if (message == null || message.length() < 2) {
             return messageID + ":INVALID";
         }
@@ -118,10 +128,25 @@ public static String checkRecipientCell(String cell) {
         return messageID + ":" + firstTwo + lastTwo;
     }
 
-    public static String sendMessage(String messageID, String messageHash, String recipient, String message) {
-        sentMessages.add(new MessageDetails(messageID, messageHash, recipient, message));
+    public static String sendMessage(MessageDetails details) {
+        sentMessages.add(details);
+        messageIDs.add(details.messageID);
+        messageHashes.add(details.messageHash);
         totalMessages++;
         return "Message successfully sent.";
+    }
+
+    public static String storeMessage(MessageDetails details) {
+        storedMessages.add(details);
+        messageIDs.add(details.messageID);
+        messageHashes.add(details.messageHash);
+        return "Message successfully stored.";
+    }
+
+
+    public static String disregardMessage(MessageDetails details) {
+        disregardedMessages.add(details);
+        return "Message disregarded.";
     }
 
     public static String printMessages() {
@@ -130,17 +155,17 @@ public static String checkRecipientCell(String cell) {
         }
 
         String result = "";
-        for (int i = 0; i < sentMessages.size(); i++) {
-            result += sentMessages.get(i).displayDetails() + "\n";
+        for (MessageDetails details : sentMessages) {
+            result += details.displayDetails() + "\n";
         }
-         return result;
-    }
 
+        return result;
+    }
     public static int returnTotalMessages() {
         return totalMessages;
     }
 
-    public static void messageMenu(Scanner sc) {
+    public static void messageMenu(Scanner sc, String sender) {
         System.out.println("\nWelcome to QuickChat");
 
         int maxMessages = readMessageLimit(sc);
@@ -152,6 +177,111 @@ public static String checkRecipientCell(String cell) {
             System.out.println("a) Send Messages");
             System.out.println("b) Show recently sent messages");
             System.out.println("c) Quit");
+            System.out.println("d) Stored Messages");
+            System.out.print("Enter choice: ");
+
+            String input = sc.nextLine().trim().toLowerCase();
+
+            if (input.isEmpty()) {
+                System.out.println("Please enter a menu option.");
+                continue;
+            }
+            choice = input.charAt(0);
+
+            switch (choice) {
+                case 'a' -> {
+                    if (sentCount >= maxMessages) {
+                        System.out.println("You have reached your message limit.");
+                        break;
+                    }
+
+                    if (createMessage(sc, sender)) {
+                        sentCount++;
+                    }
+
+                    if (sentCount == maxMessages) {
+                        System.out.println("\n=== All Messages Sent ===");
+                        System.out.println(printMessages());
+                        System.out.println("Total messages sent: " + returnTotalMessages());
+                    }
+                }
+                case 'b' -> System.out.println(printMessages());
+                case 'c' -> {
+                    System.out.println("\n=== Sent Message Details ===");
+                    System.out.println(printMessages());
+                    System.out.println("Total messages sent: " + returnTotalMessages());
+                    System.out.println("Goodbye!");
+                }
+                case 'd' -> storedMessagesMenu(sc);
+                default -> System.out.println("Invalid option.");
+            }
+        } while (choice != 'c');
+    }
+
+    private static int readMessageLimit(Scanner sc) {
+        while (true) {
+            System.out.print("How many messages would you like to send? ");
+            String input = sc.nextLine().trim();
+
+            try {
+                int limit = Integer.parseInt(input);
+
+                if (limit > 0) {
+                    return limit;
+                }
+                 System.out.println("Please enter a number greater than 0.");
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
+            }
+        }
+    }
+
+    private static boolean createMessage(Scanner sc, String sender) {
+        System.out.print("Enter Message ID: ");
+        String messageID = sc.nextLine().trim();
+
+        if (!checkMessageID(messageID)) {
+            System.out.println("Message ID is invalid.");
+            return false;
+        }
+
+        System.out.print("Enter recipient cell number: ");
+        String recipient = sc.nextLine().trim();
+        String recipientStatus = checkRecipientCell(recipient);
+        System.out.println(recipientStatus);
+
+        if (!recipientStatus.equals("Cell number successfully captured")) {
+            return false;
+        }
+                if (sentMessages.isEmpty()) {
+            return "No messages sent.";
+        }
+
+        String result = "";
+        for (MessageDetails details : sentMessages) {
+            result += details.displayDetails() + "\n";
+        }
+
+        return result;
+    }
+
+    public static int returnTotalMessages() {
+        return totalMessages;
+    }
+
+    public static void messageMenu(Scanner sc, String sender) {
+        System.out.println("\nWelcome to QuickChat");
+
+        int maxMessages = readMessageLimit(sc);
+        int sentCount = 0;
+        char choice = ' ';
+
+        do {
+            System.out.println("\nChoose an option:");
+            System.out.println("a) Send Messages");
+            System.out.println("b) Show recently sent messages");
+            System.out.println("c) Quit");
+            System.out.println("d) Stored Messages");
             System.out.print("Enter choice: ");
 
             String input = sc.nextLine().trim().toLowerCase();
@@ -170,7 +300,7 @@ public static String checkRecipientCell(String cell) {
                         break;
                     }
 
-                    if (sendNewMessage(sc)) {
+                    if (createMessage(sc, sender)) {
                         sentCount++;
                     }
 
@@ -187,6 +317,7 @@ public static String checkRecipientCell(String cell) {
                     System.out.println("Total messages sent: " + returnTotalMessages());
                     System.out.println("Goodbye!");
                 }
+                case 'd' -> storedMessagesMenu(sc);
                 default -> System.out.println("Invalid option.");
             }
         } while (choice != 'c');
@@ -211,7 +342,7 @@ public static String checkRecipientCell(String cell) {
         }
     }
 
-    private static boolean sendNewMessage(Scanner sc) {
+    private static boolean createMessage(Scanner sc, String sender) {
         System.out.print("Enter Message ID: ");
         String messageID = sc.nextLine().trim();
 
@@ -228,14 +359,166 @@ public static String checkRecipientCell(String cell) {
         if (!recipientStatus.equals("Cell number successfully captured")) {
             return false;
         }
-System.out.print("Enter your message: ");
-        String message = sc.nextLine();
 
+        System.out.print("Enter your message: ");
+        String message = sc.nextLine();
         String hash = checkMessageHash(messageID, message);
+
+        MessageDetails details = new MessageDetails(messageID, hash, sender, recipient, message);
         System.out.println("Message Hash: " + hash);
 
-        System.out.println(sendMessage(messageID, hash, recipient, message));
-        return true;
+        System.out.println("\nChoose an option:");
+        System.out.println("1. Send Message");
+        System.out.println("2. Store Message");
+        System.out.println("3. Disregard Message");
+        System.out.print("Enter choice: ");
+
+        String choice = sc.nextLine().trim();
+
+        switch (choice) {
+            case "1" -> {
+                System.out.println(sendMessage(details));
+                return true;
+            }
+            case "2" -> {
+                System.out.println(storeMessage(details));
+                return false;
+            }
+             case "3" -> {
+                System.out.println(disregardMessage(details));
+                return false;
+            }
+            default -> {
+                System.out.println("Invalid option. Message disregarded.");
+                disregardMessage(details);
+                return false;
+            }
+        }
+    }
+
+    private static void storedMessagesMenu(Scanner sc) {
+        char option = ' ';
+ do {
+            System.out.println("\n=== Stored Messages Menu ===");
+            System.out.println("a) Display sender and recipient of all stored messages");
+            System.out.println("b) Display the longest stored message");
+            System.out.println("c) Search for a message ID");
+            System.out.println("d) Search messages for a recipient");
+            System.out.println("e) Delete a message using the message hash");
+            System.out.println("f) Display full report of stored messages");
+            System.out.println("g) Return to main menu");
+            System.out.print("Enter choice: ");
+
+            String input = sc.nextLine().trim().toLowerCase();
+
+            if (input.isEmpty()) {
+                System.out.println("Please enter a menu option.");
+                continue;
+            }
+              option = input.charAt(0);
+
+            switch (option) {
+                case 'a' -> displayStoredSendersAndRecipients();
+                case 'b' -> displayLongestStoredMessage();
+                case 'c' -> searchByMessageID(sc);
+                case 'd' -> searchByRecipient(sc);
+                case 'e' -> deleteByHash(sc);
+                case 'f' -> displayStoredMessagesReport();
+                case 'g' -> System.out.println("Returning to main menu.");
+                default -> System.out.println("Invalid option.");
+            }
+        } while (option != 'g');
+    }
+
+    private static void displayStoredSendersAndRecipients() {
+        if (storedMessages.isEmpty()) {
+            System.out.println("No stored messages.");
+            return;
+        }
+         for (MessageDetails details : storedMessages) {
+            System.out.println("Sender: " + details.sender);
+            System.out.println("Recipient: " + details.recipient);
+            System.out.println();
+        }
+    }
+
+    private static void displayLongestStoredMessage() {
+        if (storedMessages.isEmpty()) {
+            System.out.println("No stored messages.");
+            return;
+        }
+
+        MessageDetails longest = storedMessages.get(0);
+
+        for (MessageDetails details : storedMessages) {
+            if (details.message.length() > longest.message.length()) {
+                longest = details;
+            }
+        }
+
+        System.out.println("Longest stored message:");
+        System.out.println(longest.displayDetails());
+    }
+    private static void searchByMessageID(Scanner sc) {
+        System.out.print("Enter message ID to search: ");
+        String searchID = sc.nextLine().trim();
+
+        for (MessageDetails details : storedMessages) {
+            if (details.messageID.equals(searchID)) {
+                System.out.println("Recipient: " + details.recipient);
+                System.out.println("Message: " + details.message);
+                return;
+            }
+        }
+
+        System.out.println("Message ID not found.");
+    }
+
+    private static void searchByRecipient(Scanner sc) {
+        System.out.print("Enter recipient to search: ");
+        String searchRecipient = sc.nextLine().trim();
+        boolean found = false;
+
+        for (MessageDetails details : storedMessages) {
+            if (details.recipient.equals(searchRecipient)) {
+                System.out.println(details.displayDetails());
+                found = true;
+                   }
+        }
+
+        if (!found) {
+            System.out.println("No messages found for that recipient.");
+        }
+    }
+
+    private static void deleteByHash(Scanner sc) {
+        System.out.print("Enter message hash to delete: ");
+        String searchHash = sc.nextLine().trim();
+
+        for (int i = 0; i < storedMessages.size(); i++) {
+            MessageDetails details = storedMessages.get(i);
+
+            if (details.messageHash.equals(searchHash)) {
+                storedMessages.remove(i);
+                messageIDs.remove(details.messageID);
+                messageHashes.remove(details.messageHash);
+                System.out.println("Message successfully deleted.");
+                return;
+            }
+        }
+        System.out.println("Message hash not found.");
+    }
+
+    private static void displayStoredMessagesReport() {
+        if (storedMessages.isEmpty()) {
+            System.out.println("No stored messages.");
+            return;
+        }
+
+        System.out.println("=== Stored Messages Full Report ===");
+        for (MessageDetails details : storedMessages) {
+            System.out.println(details.displayFullReport());
+        }
     }
 }
 
@@ -260,7 +543,7 @@ public class QuickChat_3 {
             sc.close();
             return;
         }
-System.out.println("\n=== LOGIN ===");
+        System.out.println("\n=== LOGIN ===");
         System.out.print("Username: ");
         String loginUsername = sc.nextLine().trim();
 
@@ -275,7 +558,7 @@ System.out.println("\n=== LOGIN ===");
             return;
         }
 
-        Message.messageMenu(sc);
+        Message.messageMenu(sc, loginUsername);
         sc.close();
     }
 }
