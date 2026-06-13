@@ -11,7 +11,6 @@ class Login {
     private String storedUsername;
     private String storedPassword;
     private String storedCell;
-    
 
     boolean checkUsername(String username) {
         return username != null && username.contains("_") && username.length() >= 5;
@@ -74,9 +73,31 @@ class Login {
     }
 }
 
+
 class Message {
-    static ArrayList<String> sentMessages = new ArrayList<>();
+    static ArrayList<MessageDetails> sentMessages = new ArrayList<>();
     static int totalMessages = 0;
+
+    static class MessageDetails {
+        String messageID;
+        String messageHash;
+        String recipient;
+        String message;
+
+        MessageDetails(String messageID, String messageHash, String recipient, String message) {
+            this.messageID = messageID;
+            this.messageHash = messageHash;
+            this.recipient = recipient;
+            this.message = message;
+        }
+
+        String displayDetails() {
+            return "Message ID: " + messageID + "\n"
+                + "Message Hash: " + messageHash + "\n"
+                + "Recipient: " + recipient + "\n"
+                + "Message: " + message + "\n";
+        }
+    }
 
     public static boolean checkMessageID(String messageID) {
         return messageID != null && !messageID.isBlank() && messageID.length() <= 10;
@@ -86,7 +107,8 @@ class Message {
         if (cell != null && (cell.matches("0\\d{9}") || cell.matches("\\+27\\d{9}"))) {
             return "Cell number successfully captured";
         }
-         return "Cell number is incorrectly formatted";
+
+        return "Cell number is incorrectly formatted";
     }
 
     public static String checkMessageHash(String messageID, String message) {
@@ -99,8 +121,9 @@ class Message {
 
         return messageID + ":" + firstTwo + lastTwo;
     }
-     public static String sendMessage(String message) {
-        sentMessages.add(message);
+
+    public static String sendMessage(String messageID, String messageHash, String recipient, String message) {
+        sentMessages.add(new MessageDetails(messageID, messageHash, recipient, message));
         totalMessages++;
         return "Message successfully sent.";
     }
@@ -112,8 +135,9 @@ class Message {
 
         String result = "";
         for (int i = 0; i < sentMessages.size(); i++) {
-            result += (i + 1) + ". " + sentMessages.get(i) + "\n";
+            result += sentMessages.get(i).displayDetails() + "\n";
         }
+
         return result;
     }
 
@@ -127,6 +151,7 @@ class Message {
         int maxMessages = readMessageLimit(sc);
         int sentCount = 0;
         char choice = ' ';
+
         do {
             System.out.println("\nChoose an option:");
             System.out.println("a) Send Messages");
@@ -139,8 +164,7 @@ class Message {
             if (input.isEmpty()) {
                 System.out.println("Please enter a menu option.");
                 continue;
-
- }
+            }
 
             choice = input.charAt(0);
 
@@ -151,17 +175,26 @@ class Message {
                         break;
                     }
 
-                    sendNewMessage(sc);
-                    sentCount++;
+                    if (sendNewMessage(sc)) {
+                        sentCount++;
+                    }
+
+                    if (sentCount == maxMessages) {
+                        System.out.println("\n=== All Messages Sent ===");
+                        System.out.println(printMessages());
+                        System.out.println("Total messages sent: " + returnTotalMessages());
+                    }
                 }
                 case 'b' -> System.out.println(printMessages());
                 case 'c' -> {
+                    System.out.println("\n=== Sent Message Details ===");
+                    System.out.println(printMessages());
                     System.out.println("Total messages sent: " + returnTotalMessages());
                     System.out.println("Goodbye!");
                 }
-                default -> System.out.println("Invalid option.");
+                 default -> System.out.println("Invalid option.");
             }
-            } while (choice != 'c');
+        } while (choice != 'c');
     }
 
     private static int readMessageLimit(Scanner sc) {
@@ -180,16 +213,15 @@ class Message {
             } catch (NumberFormatException e) {
                 System.out.println("Please enter a valid number.");
             }
-            }
+        }
     }
-
-    private static void sendNewMessage(Scanner sc) {
+     private static boolean sendNewMessage(Scanner sc) {
         System.out.print("Enter Message ID: ");
         String messageID = sc.nextLine().trim();
 
         if (!checkMessageID(messageID)) {
             System.out.println("Message ID is invalid.");
-            return;
+            return false;
         }
 
         System.out.print("Enter recipient cell number: ");
@@ -197,19 +229,21 @@ class Message {
         String recipientStatus = checkRecipientCell(recipient);
         System.out.println(recipientStatus);
 
-if (!recipientStatus.equals("Cell number successfully captured")) {
-            return;
+        if (!recipientStatus.equals("Cell number successfully captured")) {
+            return false;
         }
 
         System.out.print("Enter your message: ");
         String message = sc.nextLine();
-
-        String hash = checkMessageHash(messageID, message);
+          
+   String hash = checkMessageHash(messageID, message);
         System.out.println("Message Hash: " + hash);
 
-        System.out.println(sendMessage(message));
+        System.out.println(sendMessage(messageID, hash, recipient, message));
+        return true;
     }
 }
+
 public class QuickChat_3 {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -222,7 +256,7 @@ public class QuickChat_3 {
         System.out.print("Password: ");
         String password = sc.nextLine();
 
-        System.out.print("Cellphone: ");
+ System.out.print("Cellphone: ");
         String cell = sc.nextLine().trim();
 
         System.out.println(user.register(username, password, cell));
@@ -231,6 +265,7 @@ public class QuickChat_3 {
             sc.close();
             return;
         }
+
         System.out.println("\n=== LOGIN ===");
         System.out.print("Username: ");
         String loginUsername = sc.nextLine().trim();
@@ -245,7 +280,7 @@ public class QuickChat_3 {
             sc.close();
             return;
         }
-        
+
         Message.messageMenu(sc);
         sc.close();
     }
