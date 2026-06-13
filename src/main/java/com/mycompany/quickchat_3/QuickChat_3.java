@@ -1,7 +1,6 @@
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  */
-
 package com.mycompany.quickchat_3;
 
 import java.util.ArrayList;
@@ -72,8 +71,6 @@ class Login {
         return "Login failed.";
     }
 }
-
-
 class Message {
     static ArrayList<MessageDetails> sentMessages = new ArrayList<>();
     static int totalMessages = 0;
@@ -102,8 +99,7 @@ class Message {
     public static boolean checkMessageID(String messageID) {
         return messageID != null && !messageID.isBlank() && messageID.length() <= 10;
     }
-
-    public static String checkRecipientCell(String cell) {
+public static String checkRecipientCell(String cell) {
         if (cell != null && (cell.matches("0\\d{9}") || cell.matches("\\+27\\d{9}"))) {
             return "Cell number successfully captured";
         }
@@ -137,8 +133,7 @@ class Message {
         for (int i = 0; i < sentMessages.size(); i++) {
             result += sentMessages.get(i).displayDetails() + "\n";
         }
-
-        return result;
+         return result;
     }
 
     public static int returnTotalMessages() {
@@ -192,7 +187,7 @@ class Message {
                     System.out.println("Total messages sent: " + returnTotalMessages());
                     System.out.println("Goodbye!");
                 }
-                 default -> System.out.println("Invalid option.");
+                default -> System.out.println("Invalid option.");
             }
         } while (choice != 'c');
     }
@@ -215,7 +210,8 @@ class Message {
             }
         }
     }
-     private static boolean sendNewMessage(Scanner sc) {
+
+    private static boolean sendNewMessage(Scanner sc) {
         System.out.print("Enter Message ID: ");
         String messageID = sc.nextLine().trim();
 
@@ -232,11 +228,10 @@ class Message {
         if (!recipientStatus.equals("Cell number successfully captured")) {
             return false;
         }
-
-        System.out.print("Enter your message: ");
+System.out.print("Enter your message: ");
         String message = sc.nextLine();
-          
-   String hash = checkMessageHash(messageID, message);
+
+        String hash = checkMessageHash(messageID, message);
         System.out.println("Message Hash: " + hash);
 
         System.out.println(sendMessage(messageID, hash, recipient, message));
@@ -256,7 +251,7 @@ public class QuickChat_3 {
         System.out.print("Password: ");
         String password = sc.nextLine();
 
- System.out.print("Cellphone: ");
+        System.out.print("Cellphone: ");
         String cell = sc.nextLine().trim();
 
         System.out.println(user.register(username, password, cell));
@@ -265,8 +260,7 @@ public class QuickChat_3 {
             sc.close();
             return;
         }
-
-        System.out.println("\n=== LOGIN ===");
+System.out.println("\n=== LOGIN ===");
         System.out.print("Username: ");
         String loginUsername = sc.nextLine().trim();
 
